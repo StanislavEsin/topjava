@@ -9,6 +9,12 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
+import java.util.Map;
+import java.time.LocalDate;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.toList;
+
 public class UserMealsUtil {
     public static void main(String[] args) {
         List<UserMeal> mealList = Arrays.asList(
@@ -24,8 +30,17 @@ public class UserMealsUtil {
 //        .toLocalTime();
     }
 
-    public static List<UserMealWithExceed>  getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO return filtered list with correctly exceeded field
-        return null;
+    public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        Map<LocalDate, Integer> memCalories = mealList.stream()
+                .collect(groupingBy(userMeal -> userMeal.getDateTime().toLocalDate(),
+                        summingInt(UserMeal::getCalories)));
+
+        return mealList.stream()
+                .filter(userMeal -> userMeal.getDateTime().toLocalTime().isAfter(startTime) &&
+                        userMeal.getDateTime().toLocalTime().isBefore(endTime))
+                .map(userMeal -> new UserMealWithExceed(userMeal.getDateTime(), userMeal.getDescription(),
+                        userMeal.getCalories(),
+                        memCalories.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay))
+                .collect(toList());
     }
 }
