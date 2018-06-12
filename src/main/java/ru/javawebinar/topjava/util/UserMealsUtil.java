@@ -50,10 +50,7 @@ public class UserMealsUtil {
     private static Map<LocalDate, Integer> groupingByDateWithSummationByCalories(List<UserMeal> mealList) {
         Map<LocalDate, Integer> result = new HashMap<>();
         for (UserMeal userMeal : mealList) {
-            LocalDate date = userMeal.getDateTime().toLocalDate();
-
-            result.computeIfPresent(date, (key, value) -> value + userMeal.getCalories());
-            result.computeIfAbsent(date, key -> userMeal.getCalories());
+            result.merge(userMeal.getDateTime().toLocalDate(), userMeal.getCalories(), (oldVal, newVal) -> oldVal + newVal);
         }
 
         return result;
