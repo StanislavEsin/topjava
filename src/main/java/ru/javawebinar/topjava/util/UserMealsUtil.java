@@ -9,8 +9,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.HashMap;
+import static java.util.stream.Collectors.*;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -28,45 +28,27 @@ public class UserMealsUtil {
 
 
     public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime,
-                                                                    LocalTime endTime, int caloriesPerDay) {
+                                                                        LocalTime endTime, int caloriesPerDay) {
 
-        Map<LocalDate, List<UserMealWithExceed>> dateUserMealWithExceedMap = new HashMap<>();
         Map<LocalDate, Integer> memCalories = new HashMap<>();
-
-        for (UserMeal userMeal : mealList) {
-            LocalDate userMealDate = userMeal.getDateTime().toLocalDate();
-
-            memCalories.merge(userMealDate, userMeal.getCalories(), (oldVal, newVal) -> oldVal + newVal);
-
-            if (TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
-                UserMealWithExceed userMealWithExceed = new UserMealWithExceed(
+        Map<LocalDate, List<UserMealWithExceed>> userMealWithExceedMap = mealList.stream()
+                .peek(userMeal -> memCalories.merge(userMeal.getDateTime().toLocalDate(), userMeal.getCalories(),
+                        (oldVal, newVal) -> oldVal + newVal))
+                .filter(userMeal -> TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(), startTime, endTime))
+                .map(userMeal -> new UserMealWithExceed(
                         userMeal.getDateTime(),
                         userMeal.getDescription(),
                         userMeal.getCalories(),
-                        false);
+                        false))
+                .collect(groupingBy(UserMealWithExceed -> UserMealWithExceed.getDateTime().toLocalDate()));
 
-                    dateUserMealWithExceedMap.merge(userMealDate, Arrays.asList(userMealWithExceed), (oldVal, newVal) -> {
-                        oldVal.add(userMealWithExceed);
-                        return oldVal;
-                    });
-            }
-        }
-
-        List<UserMealWithExceed> result = new ArrayList<>();
-
-        for (Map.Entry<LocalDate, Integer> currentMem : memCalories.entrySet()) {
-            List<UserMealWithExceed> userMealWithExceedList = dateUserMealWithExceedMap.get(currentMem.getKey());
-
-            if (currentMem.getValue() > caloriesPerDay) {
-                for (UserMealWithExceed userMealWithExceed : userMealWithExceedList) {
-                    userMealWithExceed.setExceed(true);
-                    result.add(userMealWithExceed);
-                }
-            } else {
-                result.addAll(userMealWithExceedList);
-            }
-        }
-
-        return result;
+        return userMealWithExceedMap.entrySet().stream()
+                .peek(entrySet -> {
+                    if (memCalories.get(entrySet.getKey()) > caloriesPerDay) {
+                        entrySet.getValue().forEach(u -> u.setExceed(true));
+                    }
+                })
+                .flatMap(entrySet -> entrySet.getValue().stream())
+                .collect(toList());
     }
 }
