@@ -26,31 +26,45 @@ public class UserMealsUtil {
         getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
     }
 
-    public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime,
-                                                                   LocalTime endTime, int caloriesPerDay) {
-        List<UserMealWithExceed> result = new ArrayList<>();
 
-        Map<LocalDate, Integer> memCalories = groupingByDateWithSummationByCalories(mealList);
+    public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime,
+                                                                    LocalTime endTime, int caloriesPerDay) {
+
+        Map<LocalDate, List<UserMealWithExceed>> dateUserMealWithExceedMap = new HashMap<>();
+        Map<LocalDate, Integer> memCalories = new HashMap<>();
 
         for (UserMeal userMeal : mealList) {
+            LocalDate userMealDate = userMeal.getDateTime().toLocalDate();
+
+            memCalories.merge(userMealDate, userMeal.getCalories(), (oldVal, newVal) -> oldVal + newVal);
+
             if (TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
                 UserMealWithExceed userMealWithExceed = new UserMealWithExceed(
                         userMeal.getDateTime(),
                         userMeal.getDescription(),
                         userMeal.getCalories(),
-                        memCalories.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay);
+                        false);
 
-                result.add(userMealWithExceed);
+                    dateUserMealWithExceedMap.merge(userMealDate, Arrays.asList(userMealWithExceed), (oldVal, newVal) -> {
+                        oldVal.add(userMealWithExceed);
+                        return oldVal;
+                    });
             }
         }
 
-        return result;
-    }
+        List<UserMealWithExceed> result = new ArrayList<>();
 
-    private static Map<LocalDate, Integer> groupingByDateWithSummationByCalories(List<UserMeal> mealList) {
-        Map<LocalDate, Integer> result = new HashMap<>();
-        for (UserMeal userMeal : mealList) {
-            result.merge(userMeal.getDateTime().toLocalDate(), userMeal.getCalories(), (oldVal, newVal) -> oldVal + newVal);
+        for (Map.Entry<LocalDate, Integer> currentMem : memCalories.entrySet()) {
+            List<UserMealWithExceed> userMealWithExceedList = dateUserMealWithExceedMap.get(currentMem.getKey());
+
+            if (currentMem.getValue() > caloriesPerDay) {
+                for (UserMealWithExceed userMealWithExceed : userMealWithExceedList) {
+                    userMealWithExceed.setExceed(true);
+                    result.add(userMealWithExceed);
+                }
+            } else {
+                result.addAll(userMealWithExceedList);
+            }
         }
 
         return result;
