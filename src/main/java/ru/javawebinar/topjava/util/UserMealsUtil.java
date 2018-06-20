@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import static java.util.stream.Collectors.toList;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -29,40 +29,31 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime,
-                                                                        LocalTime endTime, int caloriesPerDay) {
-
+                                                                   LocalTime endTime, int caloriesPerDay) {
         //You can also use guava
-        List<UserMealWithExceed> result = new ArrayList<>();
-
         Map<LocalDate, Map.Entry<AtomicBoolean, Integer>> mem = new HashMap<>();
 
-        for (UserMeal userMeal : mealList) {
-            int calories = userMeal.getCalories();
-            LocalDateTime dateTime = userMeal.getDateTime();
-            LocalDate date = dateTime.toLocalDate();
-
-            mem.merge(
-                    date,
-                    new AbstractMap.SimpleEntry<>(new AtomicBoolean(calories > caloriesPerDay), calories),
-                    (oldVal, newVal) -> {
-                        int caloriesSum = oldVal.getValue() + calories;
-                        oldVal.setValue(caloriesSum);
-                        oldVal.getKey().set(caloriesSum > caloriesPerDay);
-                        return oldVal;
-                    }
-            );
-
-            if (TimeUtil.isBetween(dateTime.toLocalTime(), startTime, endTime)) {
-                UserMealWithExceed userMealWithExceed = new UserMealWithExceed(
-                        dateTime,
+        return mealList.stream()
+                .peek(userMeal -> {
+                    int calories = userMeal.getCalories();
+                    mem.merge(
+                            userMeal.getDateTime().toLocalDate(),
+                            new AbstractMap.SimpleEntry<>(new AtomicBoolean(calories > caloriesPerDay), calories),
+                            (oldVal, newVal) -> {
+                                int caloriesSum = oldVal.getValue() + calories;
+                                oldVal.setValue(caloriesSum);
+                                oldVal.getKey().set(caloriesSum > caloriesPerDay);
+                                return oldVal;
+                            }
+                    );
+                })
+                .filter(userMeal -> TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(), startTime, endTime))
+                .map(userMeal -> new UserMealWithExceed(
+                        userMeal.getDateTime(),
                         userMeal.getDescription(),
-                        calories,
-                        mem.get(date).getKey());
-
-                result.add(userMealWithExceed);
-            }
-        }
-
-        return result;
+                        userMeal.getCalories(),
+                        mem.get(userMeal.getDateTime().toLocalDate()).getKey())
+                )
+                .collect(toList());
     }
 }
