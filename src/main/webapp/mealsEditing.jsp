@@ -23,8 +23,6 @@
             <div class="row">
                 <div class="col-md-12">
                     <form id="edit" method="post" action="${pageContext.request.contextPath}/meals">
-                        <input type="hidden" name="method" value="${method}"/>
-                        <input type="hidden" name="phase" value="end"/>
                         <input type="hidden" name="meal_id" value="${meal.id.toString()}">
 
                         <div class="col-md-5">

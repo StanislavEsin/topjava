@@ -20,14 +20,9 @@
             <h3>Моя еда</h3>
             <br/>
 
-            <form method="post" action="${pageContext.request.contextPath}/meals">
-                <input type="hidden" name="method" value="new"/>
-                <input type="hidden" name="phase" value="start"/>
-                <button type="submit" class="btn btn-primary">
-                    <span class="fa fa-plus"></span>
-                    Добавить
-                </button>
-            </form>
+            <a class="btn btn-primary active" role="button" aria-pressed="true"
+               href="${pageContext.request.contextPath}/meals?method=new">Добавить</a>
+
             <br/>
             <br/>
             <table class="table table-striped" id="datatable">
@@ -47,25 +42,12 @@
                             <td>${mealWithExceed.description}</td>
                             <td>${mealWithExceed.calories}</td>
                             <td>
-                                <form method="post" action="${pageContext.request.contextPath}/meals">
-                                    <input type="hidden" name="method" value="update"/>
-                                    <input type="hidden" name="phase" value="start"/>
-                                    <input type="hidden" name="meal_id" value="${mealWithExceed.id.toString()}"/>
-                                    <button type="submit" class="btn btn-secondary">
-                                        <span class="fa fa-plus"></span>
-                                        Редактирование
-                                    </button>
-                                </form>
+                                <a class="btn btn-primary active" role="button" aria-pressed="true"
+                                   href="${pageContext.request.contextPath}/meals?method=update&meal_id=${mealWithExceed.id.toString()}">Изменить</a>
                             </td>
                             <td>
-                                <form method="post" action="${pageContext.request.contextPath}/meals">
-                                    <input type="hidden" name="method" value="delete"/>
-                                    <input type="hidden" name="meal_id" value="${mealWithExceed.id.toString()}"/>
-                                    <button type="submit" class="btn btn-secondary">
-                                        <span class="fa fa-plus"></span>
-                                        Удалить
-                                    </button>
-                                </form>
+                                <a class="btn btn-primary active" role="button" aria-pressed="true"
+                                   href="${pageContext.request.contextPath}/meals?method=delete&meal_id=${mealWithExceed.id.toString()}">Удалить</a>
                             </td>
                         </tr>
                     </c:forEach>

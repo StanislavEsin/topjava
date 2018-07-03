@@ -20,7 +20,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class MealRepositoryImpl implements MealRepository {
     private static final Logger log = getLogger(MealRepositoryImpl.class);
-    private final ConcurrentMap<Long, Meal> ram = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, Meal> storage = new ConcurrentHashMap<>();
     private final AtomicLong nextId = new AtomicLong();
 
     public MealRepositoryImpl() {
@@ -50,16 +50,16 @@ public class MealRepositoryImpl implements MealRepository {
     private void insert(Meal meal) {
         Long id = nextId.incrementAndGet();
         meal.setId(id);
-        ram.put(id, meal);
+        storage.put(id, meal);
     }
 
     private void update(Meal meal) {
-        ram.computeIfPresent(meal.getId(), (key, value) -> meal);
+        storage.computeIfPresent(meal.getId(), (key, value) -> meal);
     }
 
     @Override
     public Optional<Meal> findById(final Long id) {
-        Meal result = ram.get(id);
+        Meal result = storage.get(id);
 
         if (result == null) {
             log.info("Meal with id={} not found", id);
@@ -70,11 +70,11 @@ public class MealRepositoryImpl implements MealRepository {
 
     @Override
     public Collection<Meal> findAll() {
-        return ram.values();
+        return storage.values();
     }
 
     @Override
     public void deleteById(final Long id) {
-        ram.remove(id);
+        storage.remove(id);
     }
 }
