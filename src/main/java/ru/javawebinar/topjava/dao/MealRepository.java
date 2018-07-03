@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface MealRepository {
-    Meal insert(Meal meal);
+    Meal save(Meal meal);
     Optional<Meal> findById(Long id);
     Collection<Meal> findAll();
-    void delete(Meal meal);
+    void deleteById(Long id);
 }

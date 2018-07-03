@@ -23,52 +23,38 @@ public class MealRepositoryImpl implements MealRepository {
     private final ConcurrentMap<Long, Meal> ram = new ConcurrentHashMap<>();
     private final AtomicLong nextId = new AtomicLong();
 
-    private MealRepositoryImpl() {
+    public MealRepositoryImpl() {
         init();
     }
 
     private void init() {
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 10, 0), "Завтрак", 500));
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 13, 0), "Обед", 1000));
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 20, 0), "Ужин", 500));
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 10, 0), "Завтрак", 1000));
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 13, 0), "Обед", 500));
-        insert(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 20, 0), "Ужин", 510));
-    }
-
-    private static class LazyHolder {
-        static final MealRepositoryImpl INSTANCE = new MealRepositoryImpl();
-    }
-
-    public static MealRepositoryImpl getInstance() {
-        return LazyHolder.INSTANCE;
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 10, 0), "Завтрак", 500));
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 13, 0), "Обед", 1000));
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 30, 20, 0), "Ужин", 500));
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 10, 0), "Завтрак", 1000));
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 13, 0), "Обед", 500));
+        save(new Meal(LocalDateTime.of(2015, Month.MAY, 31, 20, 0), "Ужин", 510));
     }
 
     @Override
-    public Meal insert(final Meal meal) {
+    public Meal save(final Meal meal) {
         if (meal.isNew()) {
-            long id = insertGeneratedId(meal);
-            meal.setId(id);
+            insert(meal);
         } else {
-            insertWitId(meal);
+            update(meal);
         }
 
         return meal;
     }
 
-    private Long insertGeneratedId(Meal meal) {
-        Long newId = getNextId();
-        ram.put(newId, meal);
-        return newId;
+    private void insert(Meal meal) {
+        Long id = nextId.incrementAndGet();
+        meal.setId(id);
+        ram.put(id, meal);
     }
 
-    private Long getNextId(){
-        return nextId.incrementAndGet();
-    }
-
-    private void insertWitId(Meal meal) {
-        Optional<Meal> foundMeal = findById(meal.getId());
-        foundMeal.ifPresent(v -> ram.put(meal.getId(), meal));
+    private void update(Meal meal) {
+        ram.computeIfPresent(meal.getId(), (key, value) -> meal);
     }
 
     @Override
@@ -88,8 +74,7 @@ public class MealRepositoryImpl implements MealRepository {
     }
 
     @Override
-    public void delete(final Meal meal) {
-        Optional<Meal> foundMeal = findById(meal.getId());
-        foundMeal.ifPresent(v -> ram.remove(v.getId()));
+    public void deleteById(final Long id) {
+        ram.remove(id);
     }
 }
