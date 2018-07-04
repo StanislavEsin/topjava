@@ -74,12 +74,10 @@ public class MealServlet extends HttpServlet {
 
         String meal_id = req.getParameter("meal_id");
 
-        if (meal_id.isEmpty()) {
-            mealRepository.save(meal);
-        } else {
+        if (!meal_id.isEmpty()) {
             meal.setId(Long.valueOf(meal_id));
-            mealRepository.save(meal);
         }
+        mealRepository.save(meal);
 
         resp.sendRedirect(req.getContextPath() + "/meals");
     }
