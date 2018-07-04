@@ -46,11 +46,11 @@ public class MealServlet extends HttpServlet {
                 req.setAttribute("meal", meal.get());
                 req.getRequestDispatcher("mealsEditing.jsp").forward(req, resp);
             } else {
-                resp.sendRedirect(req.getContextPath() + "/meals");
+                resp.sendRedirect("meals");
             }
         } else if ("delete".equals(method)) {
             mealRepository.deleteById(Long.valueOf(meal_id));
-            resp.sendRedirect(req.getContextPath() + "/meals");
+            resp.sendRedirect( "meals");
         } else {
             List<Meal> meals = new ArrayList<>(mealRepository.findAll());
             List<MealWithExceed> mealsWithExceed = MealsUtil.getFilteredWithExceeded(
@@ -79,6 +79,6 @@ public class MealServlet extends HttpServlet {
         }
         mealRepository.save(meal);
 
-        resp.sendRedirect(req.getContextPath() + "/meals");
+        resp.sendRedirect("meals");
     }
 }
