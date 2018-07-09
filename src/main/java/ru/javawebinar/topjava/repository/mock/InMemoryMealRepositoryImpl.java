@@ -56,7 +56,7 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     @Override
     public List<Meal> getAll(final int userId) {
         Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId);
-        return getAllAsStream(predicate, userId)
+        return getAllAsStream(predicate)
                 .collect(Collectors.toList());
     }
 
@@ -68,11 +68,11 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
         Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId) &&
                 DateTimeUtil.isBetween(meal.getDateTime(), startDateTime, endDateTime);
 
-        return getAllAsStream(predicate, userId)
+        return getAllAsStream(predicate)
                 .collect(Collectors.toList());
     }
 
-    private Stream<Meal> getAllAsStream(final Predicate<Meal> predicate, final int userId) {
+    private Stream<Meal> getAllAsStream(final Predicate<Meal> predicate) {
         return repository.values().stream()
                 .filter(predicate)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed());
