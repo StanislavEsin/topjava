@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
@@ -54,7 +55,9 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public List<Meal> getAll(final int userId) {
-        return getAllAsStream(userId).collect(Collectors.toList());
+        Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId);
+        return getAllAsStream(predicate, userId)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -62,14 +65,16 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
         Objects.requireNonNull(startDateTime);
         Objects.requireNonNull(endDateTime);
 
-        return getAllAsStream(userId)
-                .filter(meal -> DateTimeUtil.isBetween(meal.getDateTime(), startDateTime, endDateTime))
+        Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId) &&
+                DateTimeUtil.isBetween(meal.getDateTime(), startDateTime, endDateTime);
+
+        return getAllAsStream(predicate, userId)
                 .collect(Collectors.toList());
     }
 
-    private Stream<Meal> getAllAsStream(final int userId) {
+    private Stream<Meal> getAllAsStream(final Predicate<Meal> predicate, final int userId) {
         return repository.values().stream()
-                .filter(meal -> meal.getUserId().equals(userId))
+                .filter(predicate)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed());
     }
 }
