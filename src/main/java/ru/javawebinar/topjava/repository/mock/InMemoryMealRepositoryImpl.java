@@ -18,7 +18,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class InMemoryMealRepositoryImpl implements MealRepository {
-    private Map<Integer, Meal> repository = new ConcurrentHashMap<>();
+    private Map<Integer, Map<Integer, Meal>> repository = new ConcurrentHashMap<>();
     private AtomicInteger counter = new AtomicInteger(0);
 
     {
@@ -29,35 +29,33 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     public Meal save(final Meal meal, final int userId) {
         Objects.requireNonNull(meal);
 
-        Meal result = null;
-
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            repository.put(meal.getId(), meal);
-            result = meal;
-        } else if (get(meal.getId(), userId) != null) {
-            result = repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
+        } else if (get(meal.getId(), userId) == null) {
+            return null;
         }
 
-        return result;
+        Map<Integer, Meal> meals = repository.computeIfAbsent(userId, key -> new ConcurrentHashMap<>());
+        meals.put(meal.getId(), meal);
+
+        return meal;
     }
 
     @Override
     public boolean delete(final int id, final int userId) {
-        return get(id, userId) != null &&  repository.remove(id) != null;
+        Map<Integer, Meal> meals = repository.get(userId);
+        return meals != null && meals.remove(id) != null;
     }
 
     @Override
     public Meal get(final int id, final int userId) {
-        Meal meal = repository.get(id);
-        return meal != null && meal.getUserId() == userId ? meal : null;
+        Map<Integer, Meal> meals = repository.get(userId);
+        return meals == null ? null : meals.get(id);
     }
 
     @Override
     public List<Meal> getAll(final int userId) {
-        Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId);
-        return getAllAsStream(predicate)
-                .collect(Collectors.toList());
+        return getAllAsStream(userId, null).collect(Collectors.toList());
     }
 
     @Override
@@ -65,16 +63,17 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
         Objects.requireNonNull(startDateTime);
         Objects.requireNonNull(endDateTime);
 
-        Predicate<Meal> predicate = meal -> meal.getUserId().equals(userId) &&
-                DateTimeUtil.isBetween(meal.getDateTime(), startDateTime, endDateTime);
-
-        return getAllAsStream(predicate)
-                .collect(Collectors.toList());
+        Predicate<Meal> predicate = meal -> DateTimeUtil.isBetween(meal.getDateTime(), startDateTime, endDateTime);
+        return getAllAsStream(userId, predicate).collect(Collectors.toList());
     }
 
-    private Stream<Meal> getAllAsStream(final Predicate<Meal> predicate) {
-        return repository.values().stream()
-                .filter(predicate)
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed());
+    private Stream<Meal> getAllAsStream(final int userId, Predicate<Meal> predicate) {
+        Map<Integer, Meal> meals = repository.get(userId);
+
+        return meals == null ?
+                Stream.empty() :
+                meals.values().stream()
+                        .filter(predicate == null ? meal -> true : predicate)
+                        .sorted(Comparator.comparing(Meal::getDateTime).reversed());
     }
 }
