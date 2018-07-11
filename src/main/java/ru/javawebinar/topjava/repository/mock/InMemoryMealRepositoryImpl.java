@@ -29,6 +29,8 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     public Meal save(final Meal meal, final int userId) {
         Objects.requireNonNull(meal);
 
+        meal.setUserId(userId);
+
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
         } else if (get(meal.getId(), userId) == null) {
@@ -55,7 +57,7 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public List<Meal> getAll(final int userId) {
-        return getAllAsStream(userId, null).collect(Collectors.toList());
+        return getAllAsStream(userId, meal -> true).collect(Collectors.toList());
     }
 
     @Override
@@ -68,12 +70,14 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     }
 
     private Stream<Meal> getAllAsStream(final int userId, Predicate<Meal> predicate) {
+        Objects.requireNonNull(predicate);
+
         Map<Integer, Meal> meals = repository.get(userId);
 
         return meals == null ?
                 Stream.empty() :
                 meals.values().stream()
-                        .filter(predicate == null ? meal -> true : predicate)
+                        .filter(predicate)
                         .sorted(Comparator.comparing(Meal::getDateTime).reversed());
     }
 }
