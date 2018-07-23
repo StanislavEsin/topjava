@@ -7,9 +7,9 @@ import java.util.List;
 import java.time.LocalDateTime;
 import javax.persistence.PersistenceContext;
 import javax.persistence.EntityManager;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.dao.support.DataAccessUtils;
 
 @Repository
 @Transactional(readOnly = true)
@@ -20,24 +20,24 @@ public class JpaMealRepositoryImpl implements MealRepository {
     @Transactional
     @Override
     public Meal save(Meal meal, int userId) {
-        User ref = em.getReference(User.class, userId);
-        meal.setUser(ref);
+        Meal mealPersist = meal;
 
         if (meal.isNew()) {
+            User ref = em.getReference(User.class, userId);
+            meal.setUser(ref);
             em.persist(meal);
         } else {
-            if (em.createNamedQuery(Meal.UPDATE)
-                    .setParameter("id", meal.getId())
-                    .setParameter("userId", meal.getUser().getId())
-                    .setParameter("dateTime", meal.getDateTime())
-                    .setParameter("calories", meal.getCalories())
-                    .setParameter("description", meal.getDescription())
-                    .executeUpdate() == 0) {
-                return null;
+            mealPersist = get(meal.getId(), userId);
+
+            if (mealPersist != null) {
+                mealPersist.setDateTime(meal.getDateTime());
+                mealPersist.setCalories(meal.getCalories());
+                mealPersist.setDescription(meal.getDescription());
+                em.merge(mealPersist);
             }
         }
 
-        return meal;
+        return mealPersist;
     }
 
     @Transactional
