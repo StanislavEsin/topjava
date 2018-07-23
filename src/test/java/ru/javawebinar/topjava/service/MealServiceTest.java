@@ -58,9 +58,7 @@ public class MealServiceTest {
 
     @AfterClass
     public static void afterClass() {
-        System.out.println("****************************************************************************************");
-        timing.forEach(System.out::println);
-        System.out.println("****************************************************************************************");
+        timing.forEach(log::info);
     }
 
     static {
