@@ -67,4 +67,8 @@
             <constructor-arg ref="jdbcTemplate"/>
         </bean>
     -->
+
+    <bean id="builder" class="javax.persistence.criteria.CriteriaBuilder"
+          factory-bean="entityManagerFactory"
+          factory-method="getCriteriaBuilder"/>
 </beans>
