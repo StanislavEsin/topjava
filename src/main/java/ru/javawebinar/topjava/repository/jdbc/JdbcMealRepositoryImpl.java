@@ -1,5 +1,13 @@
 package ru.javawebinar.topjava.repository.jdbc;
 
+import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.repository.MealRepository;
+import ru.javawebinar.topjava.Profiles;
+import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -9,31 +17,43 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.repository.MealRepository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+//Version 2.4.1 for Java 8 supports java.time classes in JDBC ( http://hsqldb.org/ )
 @Repository
-public class JdbcMealRepositoryImpl implements MealRepository {
-
+public abstract class JdbcMealRepositoryImpl<T> implements MealRepository {
     private static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
 
-    private final JdbcTemplate jdbcTemplate;
-
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    private final SimpleJdbcInsert insertMeal;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public JdbcMealRepositoryImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.insertMeal = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("meals")
-                .usingGeneratedKeyColumns("id");
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-        this.jdbcTemplate = jdbcTemplate;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    private SimpleJdbcInsert insertMeal;
+
+    @PostConstruct
+    public void init() {
+        this.insertMeal = new SimpleJdbcInsert(jdbcTemplate).withTableName("meals").usingGeneratedKeyColumns("id");
+    }
+
+    protected abstract T getDbDateTime(LocalDateTime localDateTime);
+
+    @Profile(Profiles.POSTGRES_DB)
+    @Repository
+    public static class LocalDateTimeJdbcMealRepositoryImpl extends JdbcMealRepositoryImpl<LocalDateTime> {
+        @Override
+        protected LocalDateTime getDbDateTime(LocalDateTime localDateTime) {
+            return localDateTime;
+        }
+    }
+
+    @Profile(Profiles.HSQL_DB)
+    @Repository
+    public static class TimestampJdbcMealRepositoryImpl extends JdbcMealRepositoryImpl<Timestamp> {
+        @Override
+        protected Timestamp getDbDateTime(LocalDateTime localDateTime) {
+            return Timestamp.valueOf(localDateTime);
+        }
     }
 
     @Override
@@ -42,7 +62,7 @@ public class JdbcMealRepositoryImpl implements MealRepository {
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("date_time", meal.getDateTime())
+                .addValue("date_time", getDbDateTime(meal.getDateTime()))
                 .addValue("user_id", userId);
 
         if (meal.isNew()) {
@@ -82,6 +102,6 @@ public class JdbcMealRepositoryImpl implements MealRepository {
     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
         return jdbcTemplate.query(
                 "SELECT * FROM meals WHERE user_id=?  AND date_time BETWEEN  ? AND ? ORDER BY date_time DESC",
-                ROW_MAPPER, userId, startDate, endDate);
+                ROW_MAPPER, userId, getDbDateTime(startDate), getDbDateTime(endDate));
     }
 }
