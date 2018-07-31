@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.BeforeClass;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -46,6 +47,11 @@ public abstract class AbstractServiceTest {
     static {
         // needed only for java.util.logging (postgres driver)
         SLF4JBridgeHandler.install();
+    }
+
+    @BeforeClass
+    public static void clearResult() {
+        results.setLength(0);
     }
 
     @AfterClass
