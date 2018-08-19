@@ -1,11 +1,13 @@
 package ru.javawebinar.topjava;
 
 import ru.javawebinar.topjava.model.Meal;
-
 import java.time.Month;
-import java.util.Arrays;
 import java.util.List;
-
+import java.util.Arrays;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
 import static java.time.LocalDateTime.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
@@ -43,5 +45,20 @@ public class MealTestData {
 
     public static void assertMatch(Iterable<Meal> actual, Iterable<Meal> expected) {
         assertThat(actual).usingElementComparatorIgnoringFields("user").isEqualTo(expected);
+    }
+
+    public static Matcher getMatcher(Meal meal) {
+        return Matchers.allOf(
+                hasProperty("id", is(meal.getId())),
+                hasProperty("dateTime", is(meal.getDateTime())),
+                hasProperty("description", is(meal.getDescription())),
+                hasProperty("calories", is(meal.getCalories()))
+        );
+    }
+
+    public static Matcher[] getMatchers(Meal... meals) {
+        return Arrays.stream(meals)
+                .map(MealTestData::getMatcher)
+                .toArray(Matcher[]::new);
     }
 }
