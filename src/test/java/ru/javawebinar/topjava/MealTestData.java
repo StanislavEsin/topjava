@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.Arrays;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.springframework.test.web.servlet.ResultMatcher;
+import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
+import static ru.javawebinar.topjava.web.json.JsonUtil.writeValue;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static java.time.LocalDateTime.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 public class MealTestData {
     public static final int MEAL1_ID = START_SEQ + 2;
@@ -60,5 +63,10 @@ public class MealTestData {
         return Arrays.stream(meals)
                 .map(MealTestData::getMatcher)
                 .toArray(Matcher[]::new);
+    }
+
+    // https://stackoverflow.com/questions/38781226/potential-heap-pollution-via-varargs-parameter-for-enume-why
+    public static ResultMatcher contentJson(Object... expected) {
+        return content().json(writeValue(expected.length == 1 ? expected[0] : expected));
     }
 }

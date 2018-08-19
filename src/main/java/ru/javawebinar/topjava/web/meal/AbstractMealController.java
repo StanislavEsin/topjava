@@ -11,6 +11,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -54,6 +55,12 @@ public abstract class AbstractMealController {
         assureIdConsistent(meal, id);
         log.info("update {} for user {}", meal, userId);
         service.update(meal, userId);
+    }
+
+    public List<MealWithExceed> getBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return getBetween(
+                startDateTime.toLocalDate(), startDateTime.toLocalTime(),
+                endDateTime.toLocalDate(), endDateTime.toLocalTime());
     }
 
     /**
