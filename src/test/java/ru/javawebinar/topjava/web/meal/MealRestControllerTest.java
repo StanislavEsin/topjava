@@ -72,11 +72,41 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    void testGetBetween() throws Exception {
+    void testGetFilter() throws Exception {
         mockMvc.perform(post(REST_URL + "/filter?startDateTime=2015-05-31T12:00&endDateTime=2015-05-31T21:00"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(contentJson(MEAL6, MEAL5));
+    }
+
+    @Test
+    void testGetBetween() throws Exception {
+        mockMvc.perform(post(REST_URL +
+                "/between?startDate=2015-05-31&startTime=12:00:00&endDate=2015-05-31&endTime=21:00:00"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(contentJson(MEAL6, MEAL5));
+    }
+
+    @Test
+    void testGetBetweenWithEmptyTimePeriod() throws Exception {
+        mockMvc.perform(post(REST_URL +
+                "/between?startDate=2015-05-31&startTime=&endDate=2015-05-31&endTime="))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(contentJson(MEAL6, MEAL5, MEAL4));
+    }
+
+    @Test
+    void testGetBetweenWithEmptyDatePeriod() throws Exception {
+        mockMvc.perform(post(REST_URL +
+                "/between?startDate=&startTime=12:00:00&endDate=&endTime=21:00:00"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(contentJson(MEAL6, MEAL5, MEAL3, MEAL2));
     }
 }
