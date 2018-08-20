@@ -1,6 +1,7 @@
 package ru.javawebinar.topjava;
 
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.to.MealWithExceed;
 import java.time.Month;
 import java.util.List;
 import java.util.Arrays;
@@ -50,17 +51,17 @@ public class MealTestData {
         assertThat(actual).usingElementComparatorIgnoringFields("user").isEqualTo(expected);
     }
 
-    public static Matcher getMatcherAllOf(Meal meal) {
+    public static Matcher getMatcherAllOf(MealWithExceed mealWithExceed) {
         return Matchers.allOf(
-                hasProperty("id", is(meal.getId())),
-                hasProperty("dateTime", is(meal.getDateTime())),
-                hasProperty("description", is(meal.getDescription())),
-                hasProperty("calories", is(meal.getCalories()))
+                hasProperty("id", is(mealWithExceed.getId())),
+                hasProperty("dateTime", is(mealWithExceed.getDateTime())),
+                hasProperty("description", is(mealWithExceed.getDescription())),
+                hasProperty("calories", is(mealWithExceed.getCalories()))
         );
     }
 
-    public static Matcher[] getMatchersAllOf(Meal... meals) {
-        return Arrays.stream(meals)
+    public static Matcher[] getMatchersAllOf(MealWithExceed... mealsWithExceed) {
+        return Arrays.stream(mealsWithExceed)
                 .map(MealTestData::getMatcherAllOf)
                 .toArray(Matcher[]::new);
     }
