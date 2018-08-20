@@ -50,7 +50,7 @@ public class MealTestData {
         assertThat(actual).usingElementComparatorIgnoringFields("user").isEqualTo(expected);
     }
 
-    public static Matcher getMatcher(Meal meal) {
+    public static Matcher getMatcherAllOf(Meal meal) {
         return Matchers.allOf(
                 hasProperty("id", is(meal.getId())),
                 hasProperty("dateTime", is(meal.getDateTime())),
@@ -59,9 +59,9 @@ public class MealTestData {
         );
     }
 
-    public static Matcher[] getMatchers(Meal... meals) {
+    public static Matcher[] getMatchersAllOf(Meal... meals) {
         return Arrays.stream(meals)
-                .map(MealTestData::getMatcher)
+                .map(MealTestData::getMatcherAllOf)
                 .toArray(Matcher[]::new);
     }
 

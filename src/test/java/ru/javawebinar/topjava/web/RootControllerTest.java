@@ -27,6 +27,7 @@ class RootControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testMeals() throws Exception {
         mockMvc.perform(get("/meals"))
                 .andDo(print())
@@ -34,6 +35,7 @@ class RootControllerTest extends AbstractControllerTest {
                 .andExpect(view().name("meals"))
                 .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
                 .andExpect(model().attribute("meals", hasSize(6)))
-                .andExpect(model().attribute("meals", hasItems(getMatchers(MEAL1, MEAL2, MEAL3, MEAL4, MEAL5))));
+                .andExpect(model().attribute("meals",
+                        hasItems(getMatchersAllOf(MEAL1, MEAL2, MEAL3, MEAL4, MEAL5, MEAL6))));
     }
 }
