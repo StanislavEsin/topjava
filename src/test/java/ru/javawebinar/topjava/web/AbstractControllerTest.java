@@ -13,7 +13,6 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import ru.javawebinar.topjava.AllActiveProfileResolver;
 import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.service.UserService;
-import ru.javawebinar.topjava.service.MealService;
 
 import javax.annotation.PostConstruct;
 
@@ -45,9 +44,6 @@ abstract public class AbstractControllerTest {
 
     @Autowired
     protected UserService userService;
-
-    @Autowired
-    protected MealService mealService;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
