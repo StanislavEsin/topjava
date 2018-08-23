@@ -1,8 +1,6 @@
 package ru.javawebinar.topjava.web;
 
-import ru.javawebinar.topjava.to.MealWithExceed;
 import ru.javawebinar.topjava.util.MealsUtil;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,15 +30,12 @@ class RootControllerTest extends AbstractControllerTest {
     @Test
     @SuppressWarnings("unchecked")
     void testMeals() throws Exception {
-        List<MealWithExceed> mealsWithExceed = MealsUtil.getWithExceeded(MEALS, USER.getCaloriesPerDay());
-
         mockMvc.perform(get("/meals"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(view().name("meals"))
                 .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
                 .andExpect(model().attribute("meals", hasSize(6)))
-                .andExpect(model().attribute("meals",
-                        hasItems(getMatchersAllOf(mealsWithExceed.toArray(new MealWithExceed[0])))));
+                .andExpect(model().attribute("meals", MealsUtil.getWithExceeded(MEALS, USER.getCaloriesPerDay())));
     }
 }

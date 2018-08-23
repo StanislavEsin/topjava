@@ -1,17 +1,12 @@
 package ru.javawebinar.topjava;
 
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.to.MealWithExceed;
 import java.time.Month;
 import java.util.List;
 import java.util.Arrays;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.springframework.test.web.servlet.ResultMatcher;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 import static ru.javawebinar.topjava.web.json.JsonUtil.writeValue;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
 import static java.time.LocalDateTime.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -49,21 +44,6 @@ public class MealTestData {
 
     public static void assertMatch(Iterable<Meal> actual, Iterable<Meal> expected) {
         assertThat(actual).usingElementComparatorIgnoringFields("user").isEqualTo(expected);
-    }
-
-    public static Matcher getMatcherAllOf(MealWithExceed mealWithExceed) {
-        return Matchers.allOf(
-                hasProperty("id", is(mealWithExceed.getId())),
-                hasProperty("dateTime", is(mealWithExceed.getDateTime())),
-                hasProperty("description", is(mealWithExceed.getDescription())),
-                hasProperty("calories", is(mealWithExceed.getCalories()))
-        );
-    }
-
-    public static Matcher[] getMatchersAllOf(MealWithExceed... mealsWithExceed) {
-        return Arrays.stream(mealsWithExceed)
-                .map(MealTestData::getMatcherAllOf)
-                .toArray(Matcher[]::new);
     }
 
     // https://stackoverflow.com/questions/38781226/potential-heap-pollution-via-varargs-parameter-for-enume-why
