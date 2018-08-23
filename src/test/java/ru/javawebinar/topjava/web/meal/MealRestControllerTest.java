@@ -1,11 +1,15 @@
 package ru.javawebinar.topjava.web.meal;
 
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.to.MealWithExceed;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.TestUtil;
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -78,40 +82,63 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void testGetFilter() throws Exception {
+        List<MealWithExceed> mealsWithExceed = Stream.of(
+                MealsUtil.createWithExceed(MEAL5, true),
+                MealsUtil.createWithExceed(MEAL6, true))
+                .collect(Collectors.toList());
+
         mockMvc.perform(post(REST_URL + "/filter?startDateTime=2015-05-31T12:00&endDateTime=2015-05-31T21:00"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(contentJson(MEAL6, MEAL5));
+                .andExpect(contentJson(mealsWithExceed));
     }
 
     @Test
     void testGetBetween() throws Exception {
+        List<MealWithExceed> mealsWithExceed = Stream.of(
+                MealsUtil.createWithExceed(MEAL6, true),
+                MealsUtil.createWithExceed(MEAL5, true))
+                .collect(Collectors.toList());
+
         mockMvc.perform(post(REST_URL +
                 "/between?startDate=2015-05-31&startTime=12:00:00&endDate=2015-05-31&endTime=21:00:00"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(contentJson(MEAL6, MEAL5));
+                .andExpect(contentJson(mealsWithExceed));
     }
 
     @Test
     void testGetBetweenWithEmptyTimePeriod() throws Exception {
+        List<MealWithExceed> mealsWithExceed = Stream.of(
+                MealsUtil.createWithExceed(MEAL6, true),
+                MealsUtil.createWithExceed(MEAL5, true),
+                MealsUtil.createWithExceed(MEAL4, true))
+                .collect(Collectors.toList());
+
         mockMvc.perform(post(REST_URL +
                 "/between?startDate=2015-05-31&startTime=&endDate=2015-05-31&endTime="))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(contentJson(MEAL6, MEAL5, MEAL4));
+                .andExpect(contentJson(mealsWithExceed));
     }
 
     @Test
     void testGetBetweenWithEmptyDatePeriod() throws Exception {
+        List<MealWithExceed> mealsWithExceed = Stream.of(
+                MealsUtil.createWithExceed(MEAL6, true),
+                MealsUtil.createWithExceed(MEAL5, true),
+                MealsUtil.createWithExceed(MEAL3, false),
+                MealsUtil.createWithExceed(MEAL2, false))
+                .collect(Collectors.toList());
+
         mockMvc.perform(post(REST_URL +
                 "/between?startDate=&startTime=12:00:00&endDate=&endTime=21:00:00"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(contentJson(MEAL6, MEAL5, MEAL3, MEAL2));
+                .andExpect(contentJson(mealsWithExceed));
     }
 }
