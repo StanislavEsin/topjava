@@ -34,7 +34,7 @@ function updateTable() {
 }
 
 function save() {
-    var form = $("#detailsForm");
+    const form = $("#detailsForm");
     $.ajax({
         type: "POST",
         url: ajaxUrl,
@@ -47,7 +47,7 @@ function save() {
     });
 }
 
-var failedNote;
+let failedNote;
 
 function closeNoty() {
     if (failedNote) {
