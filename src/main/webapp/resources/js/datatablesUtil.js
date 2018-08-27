@@ -1,6 +1,6 @@
 function makeEditable() {
     $(".delete").click(function () {
-        deleteRow($(this).attr("id"));
+        deleteRow($(this).parents("tr").attr("data-elementId"));
     });
 
     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
