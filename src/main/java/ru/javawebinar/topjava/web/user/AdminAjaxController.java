@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.web.user;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Role;
@@ -19,11 +20,13 @@ public class AdminAjaxController extends AbstractUserController {
 
     @Override
     @DeleteMapping("/{id}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") int id) {
         super.delete(id);
     }
 
     @PostMapping
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void createOrUpdate(@RequestParam("id") Integer id,
                                @RequestParam("name") String name,
                                @RequestParam("email") String email,
@@ -33,5 +36,12 @@ public class AdminAjaxController extends AbstractUserController {
         if (user.isNew()) {
             super.create(user);
         }
+    }
+
+    @Override
+    @PostMapping("/{id}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void enable(@PathVariable("id") int id, @RequestParam("enabled") boolean enabled) {
+        super.enable(id, enabled);
     }
 }

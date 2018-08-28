@@ -21,6 +21,7 @@ public class MealAjaxController extends AbstractMealController {
     }
 
     @PostMapping
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void createOrUpdate(@RequestBody Meal meal) {
         if (meal.isNew()) {
             super.create(meal);

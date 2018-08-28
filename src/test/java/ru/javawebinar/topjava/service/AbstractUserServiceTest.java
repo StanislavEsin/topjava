@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,5 +88,13 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     void getAll() throws Exception {
         List<User> all = service.getAll();
         assertMatch(all, ADMIN, USER);
+    }
+
+    @Test
+    void enable() throws Exception {
+        service.enable(ADMIN_ID, false);
+        Assertions.assertFalse(service.get(ADMIN_ID).isEnabled());
+        service.enable(ADMIN_ID, true);
+        Assertions.assertTrue(service.get(ADMIN_ID).isEnabled());
     }
 }

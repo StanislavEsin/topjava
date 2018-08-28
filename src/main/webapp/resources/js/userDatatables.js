@@ -54,3 +54,19 @@ function save() {
         success: saveCallback
     });
 }
+
+function enable(checkbox, id) {
+    const enabled = checkbox.is(":checked");
+    $.ajax({
+        url: ajaxUrl + id,
+        type: "POST",
+        data: "enabled=" + enabled,
+        success: function () {
+            checkbox.closest("tr")[0].dataset.userenabled = enabled;
+            successNoty(enabled ? "Enabled" : "Disabled");
+        },
+        error: function () {
+            $(checkbox).prop("checked", !enabled);
+        }
+    });
+}
