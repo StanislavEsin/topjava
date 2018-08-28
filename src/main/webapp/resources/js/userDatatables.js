@@ -40,3 +40,17 @@ $(function () {
     });
     makeEditable();
 });
+
+function updateTable() {
+    $.get(ajaxUrl, updateTableByData);
+}
+
+function save() {
+    const form = $("#detailsForm");
+    $.ajax({
+        type: "POST",
+        url: ajaxUrl,
+        data: form.serialize(),
+        success: saveCallback
+    });
+}

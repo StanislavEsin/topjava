@@ -33,11 +33,50 @@ $(function () {
     });
     makeEditable();
 
-    jQuery('#dateTime').datetimepicker();
+    $('#dateTime').datetimepicker({
+        format: 'Y-m-d H:i',
+        formatTime:'H:i',
+        formatDate:'Y-m-d'
+    });
+
+    const startDate = $('#startDate');
+    const endDate = $('#endDate');
+
+    startDate.datetimepicker({
+        format: 'Y-m-d',
+        onShow: function(ct) {
+            this.setOptions({
+                maxDate:endDate.val() ? endDate.val() : false
+            })
+        },
+        timepicker: false
+    });
+
+    endDate.datetimepicker({
+        format: 'Y-m-d',
+        onShow:function(ct) {
+            this.setOptions({
+                minDate: startDate.val() ? startDate.val() : false
+            })
+        },
+        timepicker: false
+    });
+
+    $('#startTime').datetimepicker({
+        datepicker: false,
+        format: 'H:i'
+    });
+
+    $('#endTime').datetimepicker({
+        datepicker: false,
+        format: 'H:i'
+    });
 });
 
-function saveMeal() {
-    const formAction = $("#detailsForm").attr("action");
+function save() {
+    const form       = $("#detailsForm");
+    const formMethod = form.attr("method");
+    const formAction = form.attr("action");
     const formData = {
         "dateTime": new Date($("#dateTime")[0].value),
         "description": $("#description")[0].value,
@@ -45,14 +84,28 @@ function saveMeal() {
     };
 
     $.ajax({
-        type: "POST",
+        type: formMethod,
         url: formAction,
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(formData),
-        success: function () {
-            $("#editRow").modal("hide");
-            updateTable();
-            successNoty("Saved");
-        }
+        success: saveCallback
     });
+}
+
+function updateTable() {
+    const form = $("#filter");
+    const formMethod = form.attr("method");
+    const formAction = form.attr("action");
+
+    $.ajax({
+        type: formMethod,
+        url: formAction,
+        data: form.serialize(),
+        success: updateTableByData
+    });
+}
+
+function clearFilter() {
+    $("#filter")[0].reset();
+    updateTable();
 }

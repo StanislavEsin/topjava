@@ -14,25 +14,57 @@
     <div class="container">
         <h3><spring:message code="meal.title"/></h3>
 
-        <form method="post" action="meals/filter">
-            <dl>
-                <dt><spring:message code="meal.startDate"/>:</dt>
-                <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
-            </dl>
-            <dl>
-                <dt><spring:message code="meal.endDate"/>:</dt>
-                <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
-            </dl>
-            <dl>
-                <dt><spring:message code="meal.startTime"/>:</dt>
-                <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
-            </dl>
-            <dl>
-                <dt><spring:message code="meal.endTime"/>:</dt>
-                <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
-            </dl>
-            <button type="submit"><spring:message code="meal.filter"/></button>
-        </form>
+        <div class="row">
+            <div class="col-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><spring:message code="meal.filterTitle"/></h5>
+                    </div>
+                    <div class="card-body py-0">
+                        <form id="filter" method="get" action="ajax/profile/meals/filter">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label" for="startDate">
+                                            <spring:message code="meal.startDate"/>
+                                        </label>
+                                        <input id="startDate" name="startDate" class="form-control col-5">
+
+                                        <label class="col-form-label" for="endDate">
+                                            <spring:message code="meal.endDate"/>
+                                        </label>
+                                        <input id="endDate" name="endDate" class="form-control col-5">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label" for="startTime">
+                                            <spring:message code="meal.startTime"/>
+                                        </label>
+                                        <input id="startTime" name="startTime" class="form-control col-3">
+
+                                        <label class="col-form-label" for="endTime">
+                                            <spring:message code="meal.endTime"/>
+                                        </label>
+                                        <input id="endTime" name="endTime" class="form-control col-3">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer text-right">
+                        <button class="btn btn-danger" onclick="clearFilter()">
+                            <span class="fa fa-remove"></span><spring:message code="common.cancel"/>
+                        </button>
+                        <button class="btn btn-primary" onclick="updateTable()">
+                            <span class="fa fa-filter"></span> <spring:message code="meal.filter"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <hr>
         <button class="btn btn-primary" onclick="add()">
             <span class="fa fa-plus"></span>
@@ -53,9 +85,6 @@
                 <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.to.MealWithExceed"/>
                 <tr data-mealExceed="${meal.exceed}" data-elementId="${meal.id}">
                     <td>
-                            <%--${meal.dateTime.toLocalDate()} ${meal.dateTime.toLocalTime()}--%>
-                            <%--<%=TimeUtil.toString(meal.getDateTime())%>--%>
-                            <%--${fn:replace(meal.dateTime, 'T', ' ')}--%>
                             ${fn:formatDateTime(meal.dateTime)}
                     </td>
                     <td>${meal.description}</td>
@@ -76,7 +105,7 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="detailsForm" action="ajax/profile/meals/">
+                <form id="detailsForm" method="post" action="ajax/profile/meals/">
                     <input type="hidden" id="id" name="id">
 
                     <div class="form-group">
@@ -85,7 +114,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="description" class="col-form-label"><spring:message code="meal.description"/></label>
+                        <label for="description" class="col-form-label">
+                            <spring:message code="meal.description"/>
+                        </label>
                         <input type="text" class="form-control" id="description" name="description"
                                placeholder="<spring:message code="meal.description"/>">
                     </div>
@@ -102,7 +133,7 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="saveMeal()">
+                <button type="button" class="btn btn-primary" onclick="save()">
                     <span class="fa fa-check"></span>
                     <spring:message code="common.save"/>
                 </button>
