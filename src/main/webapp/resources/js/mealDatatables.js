@@ -27,7 +27,7 @@ $(function () {
         "order": [
             [
                 0,
-                "asc"
+                "desc"
             ]
         ]
     });
@@ -62,12 +62,7 @@ $(function () {
         timepicker: false
     });
 
-    $('#startTime').datetimepicker({
-        datepicker: false,
-        format: 'H:i'
-    });
-
-    $('#endTime').datetimepicker({
+    $('#startTime, #endTime').datetimepicker({
         datepicker: false,
         format: 'H:i'
     });
@@ -78,7 +73,7 @@ function save() {
     const formMethod = form.attr("method");
     const formAction = form.attr("action");
     const formData = {
-        "dateTime": new Date($("#dateTime")[0].value),
+        "dateTime": new Date($("#dateTime")[0].value + ":00.000Z"),
         "description": $("#description")[0].value,
         "calories": $("#calories")[0].value
     };
