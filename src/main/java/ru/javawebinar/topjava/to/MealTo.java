@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.to;
 
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,7 +19,7 @@ public class MealTo extends BaseTo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @NotNull
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @DateTimeFormat(pattern = DateTimeUtil.DATE_TIME_PATTERN)
     private LocalDateTime dateTime;
 
     @NotBlank
