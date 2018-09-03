@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.web.meal;
 
-import ru.javawebinar.topjava.to.MealTo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +54,6 @@ public abstract class AbstractMealController {
         assureIdConsistent(meal, id);
         log.info("update {} for user {}", meal, userId);
         service.update(meal, userId);
-    }
-
-    public void update(MealTo mealTo, int id) {
-        int userId = SecurityUtil.authUserId();
-        assureIdConsistent(mealTo, id);
-        log.info("update {} for user {}", mealTo, userId);
-        service.update(mealTo, userId);
     }
 
     /**
