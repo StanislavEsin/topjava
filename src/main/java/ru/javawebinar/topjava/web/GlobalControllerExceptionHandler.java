@@ -20,10 +20,10 @@ public class GlobalControllerExceptionHandler {
         ModelAndView mav = new ModelAndView("exception/exception");
         Throwable rootCause = ValidationUtil.getRootCause(e);
         mav.addObject("exception", rootCause);
-        mav.addObject("message", rootCause.toString());
+        mav.addObject("message", ValidationUtil.getMessage(rootCause));
 
         // Interceptor is not invoked, put userTo
-        AuthorizedUser authorizedUser = AuthorizedUser.safeGet();
+        AuthorizedUser authorizedUser = SecurityUtil.safeGet();
         if (authorizedUser != null) {
             mav.addObject("userTo", authorizedUser.getUserTo());
         }
