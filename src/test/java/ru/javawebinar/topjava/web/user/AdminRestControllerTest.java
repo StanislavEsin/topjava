@@ -1,26 +1,25 @@
 package ru.javawebinar.topjava.web.user;
 
+import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.model.Role;
+import ru.javawebinar.topjava.TestUtil;
+import ru.javawebinar.topjava.util.exception.ErrorType;
+import ru.javawebinar.topjava.web.AbstractControllerTest;
+import ru.javawebinar.topjava.web.json.JsonUtil;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
-import ru.javawebinar.topjava.TestUtil;
-import ru.javawebinar.topjava.model.Role;
-import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.json.JsonUtil;
-
-import java.util.Collections;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.TestUtil.readFromJson;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 class AdminRestControllerTest extends AbstractControllerTest {
-
     private static final String REST_URL = AdminRestController.REST_URL + '/';
 
     @Test
@@ -89,10 +88,24 @@ class AdminRestControllerTest extends AbstractControllerTest {
         mockMvc.perform(put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
-                .content(JsonUtil.writeValue(updated)))
+                .content(jsonWithPassword(updated, updated.getPassword())))
                 .andExpect(status().isNoContent());
 
         assertMatch(userService.get(USER_ID), updated);
+    }
+
+    @Test
+    void testUpdateInvalid() throws Exception {
+        User updated = new User(USER);
+        updated.setName("");
+        mockMvc.perform(put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(jsonWithPassword(updated, updated.getPassword())))
+                .andExpect(status().isUnprocessableEntity())
+                //https://habr.com/company/luxoft/blog/280782/
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andDo(print());
     }
 
     @Test
@@ -101,7 +114,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
         ResultActions action = mockMvc.perform(post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
-                .content(jsonWithPassword(expected, "newPass")))
+                .content(jsonWithPassword(expected, expected.getPassword())))
                 .andExpect(status().isCreated());
 
         User returned = readFromJson(action, User.class);
@@ -109,6 +122,18 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
         assertMatch(returned, expected);
         assertMatch(userService.getAll(), ADMIN, expected, USER);
+    }
+
+    @Test
+    void testCreateInvalid() throws Exception {
+        User expected = new User(null, "New", "", "newPass", 2300, Role.ROLE_USER, Role.ROLE_ADMIN);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(jsonWithPassword(expected, expected.getPassword())))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andDo(print());
     }
 
     @Test
