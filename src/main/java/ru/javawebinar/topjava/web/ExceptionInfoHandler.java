@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.web;
 
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
@@ -8,10 +7,15 @@ import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.util.exception.ErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,12 +25,28 @@ import org.springframework.validation.BindException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
 public class ExceptionInfoHandler {
     private static Logger log = LoggerFactory.getLogger(ExceptionInfoHandler.class);
+    private final MessageUtil messageUtil;
+
+    public static final String EXCEPTION_DUPLICATE_EMAIL = "exception.user.duplicateEmail";
+
+    private static final Map<String, String> I18N_MAP = Collections.unmodifiableMap(
+            new HashMap<String, String>() {
+                {
+                    put("users_unique_email_idx", EXCEPTION_DUPLICATE_EMAIL);
+                }
+            });
+
+    @Autowired
+    public ExceptionInfoHandler(MessageUtil messageUtil) {
+        this.messageUtil = messageUtil;
+    }
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
@@ -38,7 +58,15 @@ public class ExceptionInfoHandler {
     @ResponseStatus(value = HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR);
+        String msgRoot = ValidationUtil.getRootCause(e).getMessage().toLowerCase();
+
+        Optional<String> i18nKey = I18N_MAP.keySet().stream()
+                .filter(msgRoot::contains)
+                .findFirst();
+
+        return i18nKey
+                .map(s -> logAndGetErrorInfo(req, e, true, DATA_ERROR, messageUtil.getMessage(I18N_MAP.get(s))))
+                .orElseGet(() -> logAndGetErrorInfo(req, e, true, DATA_ERROR));
     }
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)  // 422
