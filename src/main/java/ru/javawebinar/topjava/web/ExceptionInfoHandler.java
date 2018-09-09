@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.web;
 
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
@@ -47,9 +48,10 @@ public class ExceptionInfoHandler {
     }
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
-    @ExceptionHandler({BindException.class})
+    @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
     public ErrorInfo bindValidationError(HttpServletRequest req, Exception e) {
-        BindingResult bindingResult = ((BindException) e).getBindingResult();
+        BindingResult bindingResult = e instanceof BindException ?
+                ((BindException) e).getBindingResult() : ((MethodArgumentNotValidException) e).getBindingResult();
         String[] fieldsErrorsDetail = ValidationUtil.getFieldsErrorsDetail(bindingResult);
 
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, fieldsErrorsDetail);
