@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava;
 
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -8,11 +9,10 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.web.json.JsonUtil;
-
 import java.io.UnsupportedEncodingException;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static ru.javawebinar.topjava.web.json.JsonUtil.writeValue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class TestUtil {
 
@@ -48,5 +48,10 @@ public class TestUtil {
 
     public static RequestPostProcessor userAuth(User user) {
         return SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+    }
+
+    //https://habr.com/company/luxoft/blog/280782/
+    public static ResultMatcher errorType(ErrorType type) {
+        return jsonPath("$.type").value(type.name());
     }
 }
